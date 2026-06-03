@@ -1,0 +1,1302 @@
+<!DOCTYPE htm<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusicManager Pro APK</title>
+    <style>
+        :root {
+            --bg-principal: #121212;
+            --bg-card: #1e1e1e;
+            --bg-input: #2a2a2a;
+            --accent: #00adb5;
+            --text: #eeeeee;
+            --text-muted: #888888;
+            --tom-orig: #2e7d32;
+            --tom-masc: #1565c0;
+            --tom-fem: #c2185b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        /* Container Simulando APK Vertical */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            background-color: var(--bg-principal);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        /* Header Fixa */
+        header {
+            background-color: var(--bg-card);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2d2d2d;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .btn-add-musica {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        /* Área de Conteúdo Histórico (Scroll) */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 90px; /* Espaço para a barra inferior */
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Filtros Deslizantes Horizontais */
+        .scroll-filtros {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            scrollbar-width: none;
+        }
+        .scroll-filtros::-webkit-scrollbar {
+            display: none;
+        }
+
+        .btn-filtro {
+            background-color: var(--bg-card);
+            color: var(--text);
+            border: 1px solid #333;
+            padding: 8px 16px;
+            border-radius: 20px;
+            white-space: nowrap;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-filtro.active {
+            background-color: var(--accent);
+            color: #000;
+            font-weight: bold;
+            border-color: var(--accent);
+        }
+
+        /* Barra de Pesquisa */
+        .search-bar {
+            width: 100%;
+            background-color: var(--bg-input);
+            border: 1px solid #3d3d3d;
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--text);
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        /* Cards de Música */
+        .music-card {
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .music-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .music-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .tag-tema {
+            background: #333;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--accent);
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        /* Seletores de Tom Inteligentes */
+        .btn-tons-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .btn-tom {
+            border: 2px solid transparent;
+            padding: 6px;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-tom.orig { background-color: var(--tom-orig); }
+        .btn-tom.masc { background-color: var(--tom-masc); }
+        .btn-tom.fem { background-color: var(--tom-fem); }
+        
+        .btn-tom.selected {
+            border-color: #fff;
+            box-shadow: 0 0 8px #fff;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .btn-cifra { background-color: #444; color: white; }
+        .btn-add-setlist { background-color: var(--accent); color: black; }
+
+        /* Formulários das Abas */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: var(--bg-input);
+            border: 1px solid #3d3d3d;
+            padding: 10px;
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--accent);
+            color: black;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .btn-whatsapp {
+            width: 100%;
+            background-color: #25D366;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Lista de Itens Gerados */
+        .output-list {
+            margin-top: 15px;
+        }
+
+        .output-item {
+            background-color: var(--bg-card);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #333;
+        }
+
+        /* Escala Grid Visual */
+        .escala-item-linha {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #2d2d2d;
+            font-size: 0.9rem;
+        }
+        .escala-item-linha span:first-child {
+            color: var(--accent);
+        }
+
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background-color: var(--bg-card);
+            border-top: 1px solid #2d2d2d;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.75rem;
+            background: none;
+            border: none;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-item-icon {
+            font-size: 1.4rem;
+            margin-bottom: 2px;
+        }
+
+        /* Modais (Tela Cheia Nativa Mobile) */
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-principal);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .modal-body-cifra {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px;
+            border-radius: 6px;
+            white-space: pre;
+            overflow-x: auto;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .cifra-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-ctrl-cifra {
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <header>
+        <h1>MusicManager Pro</h1>
+        <button class="btn-add-musica" onclick="abrirModal('modalCadastro')">+ Nova Música</button>
+    </header>
+
+    <div class="main-content">
+        
+        <div id="tab-musicas" class="tab-content active">
+            <div class="scroll-filtros">
+                <button class="btn-filtro active" onclick="filtrarPorTema('Todos', this)">Todos</button>
+                <button class="btn-filtro" onclick="filtrarPorTema('Celebração', this)">Celebração</button>
+                <button class="btn-filtro" onclick="filtrarPorTema('Adoração', this)">Adoração</button>
+                <button class="btn-filtro" onclick="filtrarPorTema('Arrependimento', this)">Arrependimento</button>
+                <button class="btn-filtro" onclick="filtrarPorTema('Família', this)">Família</button>
+                <button class="btn-filtro" onclick="filtrarPorTema('Santa Ceia', this)">Santa Ceia</button>
+                <button class="btn-filtro" onclick="filtrarPorTema('Gratidão Medley', this)">Gratidão Medley</button>
+            </div>
+
+            <input type="text" id="inputPesquisa" class="search-bar" placeholder="Pesquisar música ou ministério..." oninput="filtrarMusicas()">
+
+            <div id="listaMusicas">
+                </div>
+        </div>
+
+        <div id="tab-repertorio" class="tab-content">
+            <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Montar Repertório</h2>
+            <div class="form-group">
+                <label>Nome do Evento / Data</label>
+                <input type="text" id="repEvento" class="form-control" placeholder="Ex: Culto de Domingo - 16 Out">
+            </div>
+            <div class="form-group">
+                <label>Músicas Selecionadas</label>
+                <textarea id="repListaMusicas" class="form-control" rows="4" placeholder="Escolha na aba de músicas ou digite aqui..."></textarea>
+            </div>
+            <button class="btn-submit" onclick="salvarRepertorio()">Salvar Repertório</button>
+            <button class="btn-whatsapp" onclick="compartilharRepertorio()">✉️ Enviar Setlist para WhatsApp</button>
+
+            <h3 style="font-size: 1rem; margin-top: 20px; margin-bottom: 10px;">Repertórios Ativos</h3>
+            <div id="listaRepertorios" class="output-list"></div>
+        </div>
+
+        <div id="tab-escala" class="tab-content">
+            <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Escala da Equipe</h2>
+            <div class="form-group">
+                <label>Data / Culto</label>
+                <input type="text" id="escData" class="form-control" placeholder="Ex: Domingo 16/10">
+            </div>
+            
+            <h3 style="font-size: 0.9rem; color: var(--accent); margin-bottom: 10px;">Vocais</h3>
+            <div class="form-group"><label>🎤 Microfone 1 (Líder)</label><input type="text" id="escM1" class="form-control"></div>
+            <div class="form-group"><label>🎤 Microfone 2</label><input type="text" id="escM2" class="form-control"></div>
+            <div class="form-group"><label>🎤 Microfone 3</label><input type="text" id="escM3" class="form-control"></div>
+            <div class="form-group"><label>🎤 Microfone 4</label><input type="text" id="escM4" class="form-control"></div>
+
+            <h3 style="font-size: 0.9rem; color: var(--accent); margin-bottom: 10px;">Banda / Instrumentistas</h3>
+            <div class="form-group"><label>🎸 Violão</label><input type="text" id="escVol" class="form-control"></div>
+            <div class="form-group"><label>🎸 Baixo</label><input type="text" id="escBax" class="form-control"></div>
+            <div class="form-group"><label>🎸 Guitarra</label><input type="text" id="escGui" class="form-control"></div>
+            <div class="form-group"><label>🎹 Teclado</label><input type="text" id="escTec" class="form-control"></div>
+            <div class="form-group"><label>🥁 Bateria</label><input type="text" id="escBat" class="form-control"></div>
+            <div class="form-group"><label>🎛️ Mesa de Som</label><input type="text" id="escSom" class="form-control"></div>
+
+            <button class="btn-submit" onclick="publicarEscala()">Publicar Escala</button>
+            <button class="btn-whatsapp" onclick="compartilharEscala()">✉️ Enviar Escala para WhatsApp</button>
+
+            <h3 style="font-size: 1rem; margin-top: 20px; margin-bottom: 10px;">Escalas Publicadas</h3>
+            <div id="listaEscalas" class="output-list"></div>
+        </div>
+
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="mudarAba('tab-musicas', this)">
+            <span class="nav-item-icon">🎵</span>
+            <span>Músicas</span>
+        </button>
+        <button class="nav-item" onclick="mudarAba('tab-repertorio', this)">
+            <span class="nav-item-icon">📋</span>
+            <span>Repertório</span>
+        </button>
+        <button class="nav-item" onclick="mudarAba('tab-escala', this)">
+            <span class="nav-item-icon">👥</span>
+            <span>Escala</span>
+        </button>
+    </nav>
+
+    <div id="modalCadastro" class="modal">
+        <div class="modal-header">
+            <h2>Nova Música</h2>
+            <button class="btn-ctrl-cifra" onclick="fecharModal('modalCadastro')">Fechar X</button>
+        </div>
+        <div class="form-group">
+            <label>Título da Música</label>
+            <input type="text" id="cadTitulo" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>Ministério / Artista</label>
+            <input type="text" id="cadMinisterio" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>Tema</label>
+            <select id="cadTema" class="form-control">
+                <option value="Adoração">Adoração</option>
+                <option value="Celebração">Celebração</option>
+                <option value="Arrependimento">Arrependimento</option>
+                <option value="Família">Família</option>
+                <option value="Santa Ceia">Santa Ceia</option>
+                <option value="Gratidão Medley">Gratidão Medley</option>
+            </select>
+        </div>
+        <div class="form-group" style="display:grid; grid-template-columns: repeat(3,1fr); gap:5px;">
+            <div><label>Tom Orig.</label><input type="text" id="cadTomOrig" class="form-control" placeholder="G"></div>
+            <div><label>Tom Masc.</label><input type="text" id="cadTomMasc" class="form-control" placeholder="E"></div>
+            <div><label>Tom Fem.</label><input type="text" id="cadTomFem" class="form-control" placeholder="C"></div>
+        </div>
+        <div class="form-group">
+            <label>Letra com Cifra</label>
+            <textarea id="cadCifra" class="form-control" rows="8" placeholder="Cole aqui a cifra monoespaçada..."></textarea>
+        </div>
+        <button class="btn-submit" onclick="salvarNovaMusica()">Salvar no Banco</button>
+    </div>
+
+    <div id="modalCifra" class="modal" style="background-color: #000;">
+        <div class="modal-header" style="border-color: #222;">
+            <h2 id="viewCifraTitulo" style="color: #fff; font-size: 1.1rem;">Cifra</h2>
+            <button class="btn-ctrl-cifra" onclick="fecharModalCifra()">Sair do Palco</button>
+        </div>
+        <div class="cifra-controls">
+            <button class="btn-ctrl-cifra" onclick="transporCifra(-1)">Tom -1</button>
+            <button class="btn-ctrl-cifra" onclick="transporCifra(1)">Tom +1</button>
+            <button class="btn-ctrl-cifra" id="btnAutoScroll" onclick="toggleAutoScroll()">Rolar Auto: OFF</button>
+        </div>
+        <div id="viewCifraCorpo" class="modal-body-cifra"></div>
+    </div>
+
+</div>
+
+<script>
+    // Banco de Dados Inicial (Carregado se o localStorage estiver vazio)
+    const musicasIniciais = [
+        {
+            id: 1,
+            titulo: "Gratidão Medley (Pot-Pourri)",
+            ministerio: "Arranjo Local",
+            tema: "Gratidão Medley",
+            tomOrig: "G", tomMasc: "G", tomFem: "C",
+            tomSelecionado: "G",
+            cifra: "G          D\nTe agradeço, oh Pai\nEm          C\nPelo que tens feito aqui"
+        },
+        {
+            id: 2,
+            titulo: "Lindo És",
+            ministerio: "Kingdom Culture",
+            tema: "Adoração",
+            tomOrig: "A", tomMasc: "G", tomFem: "D",
+            tomSelecionado: "A",
+            cifra: "A                   Bm\nLindo, lindo, lindo és\n          F#m          E\nGlória, glória eu Te dou"
+        }
+    ];
+
+    let bancoMusicas = JSON.parse(localStorage.getItem('bancoMusicas')) || musicasIniciais;
+    let bancoRepertorios = JSON.parse(localStorage.getItem('bancoRepertorios')) || [];
+    let bancoEscalas = JSON.parse(localStorage.getItem('bancoEscalas')) || [];
+
+    let filtroTemaAtual = "Todos";
+    let cifraOriginalTransposicao = "";
+    let scrollInterval = null;
+    letisScrolling = false;
+
+    // Inicialização
+    window.onload = function() {
+        renderizarMusicas();
+        renderizarRepertorios();
+        renderizarEscalas();
+    };
+
+    // Navegação entre Abas
+    function mudarAba(tabId, elemento) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        elemento.classList.add('active');
+    }
+
+    // Gerenciamento de Modais
+    function abrirModal(id) { document.getElementById(id).classList.add('active'); }
+    function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    // Renderizar Músicas no Banco
+    function renderizarMusicas() {
+        const container = document.getElementById('listaMusicas');
+        container.innerHTML = "";
+
+        const textoPesquisa = document.getElementById('inputPesquisa').value.toLowerCase();
+
+        const filtradas = bancoMusicas.filter(m => {
+            const correspondeTexto = m.titulo.toLowerCase().includes(textoPesquisa) || m.ministerio.toLowerCase().includes(textoPesquisa);
+            const correspondeTema = (filtroTemaAtual === "Todos") || (m.tema === filtroTemaAtual);
+            return correspondeTexto && correspondeTema;
+        });
+
+        filtradas.forEach(m => {
+            container.innerHTML += `
+                <div class="music-card">
+                    <div class="music-info">
+                        <h3>${m.titulo}</h3>
+                        <p>${m.ministerio}</p>
+                        <span class="tag-tema">${m.tema}</span>
+                    </div>
+                    <div class="btn-tons-container">
+                        <div class="btn-tom orig ${m.tomSelecionado === m.tomOrig ? 'selected' : ''}" onclick="selecionarTom(${m.id}, '${m.tomOrig}')">Orig: ${m.tomOrig}</div>
+                        <div class="btn-tom masc ${m.tomSelecionado === m.tomMasc ? 'selected' : ''}" onclick="selecionarTom(${m.id}, '${m.tomMasc}')">♂ Masc: ${m.tomMasc}</div>
+                        <div class="btn-tom fem ${m.tomSelecionado === m.tomFem ? 'selected' : ''}" onclick="selecionarTom(${m.id}, '${m.tomFem}')">♀ Fem: ${m.tomFem}</div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-action btn-cifra" onclick="verCifra(${m.id})">👁️ Ver Cifra</button>
+                        <button class="btn-action btn-add-setlist" onclick="jogarParaSetlist(${m.id})">+ Setlist</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function filtrarPorTema(tema, btn) {
+        document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtroTemaAtual = tema;
+        renderizarMusicas();
+    }
+
+    function filtrarMusicas() { renderizarMusicas(); }
+
+    function selecionarTom(id, tom) {
+        const musica = bancoMusicas.find(m => m.id === id);
+        if(musica) {
+            musica.tomSelecionado = tom;
+            localStorage.setItem('bancoMusicas', JSON.stringify(bancoMusicas));
+            renderizarMusicas();
+        }
+    }
+
+    // Lógica Inteligente para Setlist
+    function jogarParaSetlist(id) {
+        const m = bancoMusicas.find(m => m.id === id);
+        if(m) {
+            const textarea = document.getElementById('repListaMusicas');
+            const quebra = textarea.value === "" ? "" : "\n";
+            textarea.value += `${quebra}- ${m.titulo} (${m.tomSelecionado})`;
+            
+            // Navega automaticamente para a aba de repertório
+            mudarAba('tab-repertorio', document.querySelectorAll('.nav-item')[1]);
+        }
+    }
+
+    // Salvar Nova Música no Banco
+    function salvarNovaMusica() {
+        const titulo = document.getElementById('cadTitulo').value;
+        const ministerio = document.getElementById('cadMinisterio').value;
+        const tema = document.getElementById('cadTema').value;
+        const tomOrig = document.getElementById('cadTomOrig').value || 'N/A';
+        const tomMasc = document.getElementById('cadTomMasc').value || 'N/A';
+        const tomFem = document.getElementById('cadTomFem').value || 'N/A';
+        const cifra = document.getElementById('cadCifra').value;
+
+        if(!titulo || !cifra) return alert('Por favor, insira o título e a cifra!');
+
+        const nova = {
+            id: Date.now(),
+            titulo, ministerio, tema, tomOrig, tomMasc, tomFem, tomSelecionado: tomOrig, cifra
+        };
+
+        bancoMusicas.push(nova);
+        localStorage.setItem('bancoMusicas', JSON.stringify(bancoMusicas));
+        renderizarMusicas();
+        fecharModal('modalCadastro');
+        
+        // Limpar formulário
+        document.getElementById('cadTitulo').value = "";
+        document.getElementById('cadCifra').value = "";
+    }
+
+    // Visualizar e Transpor Cifra
+    function verCifra(id) {
+        const m = bancoMusicas.find(m => m.id === id);
+        if(m) {
+            document.getElementById('viewCifraTitulo').innerText = `${m.titulo} (Tom Atual: ${m.tomSelecionado})`;
+            cifraOriginalTransposicao = m.cifra;
+            document.getElementById('viewCifraCorpo').innerText = m.cifra;
+            abrirModal('modalCifra');
+        }
+    }
+
+    function fecharModalCifra() {
+        fecharModal('modalCifra');
+        clearInterval(scrollInterval);
+        isScrolling = false;
+        document.getElementById('btnAutoScroll').innerText = "Rolar Auto: OFF";
+    }
+
+    // Transpositor Básico de Notas por Semitom
+    function transporCifra(semitons) {
+        const notas = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        const corpo = document.getElementById('viewCifraCorpo');
+        
+        let texto = corpo.innerText;
+        // Expressão regular simples para identificar possíveis acordes comuns
+        const regexAcorde = /\b([CDEFGAB][#b]?(m|maj|min|dim|aug|sus)?\d?)\b/g;
+
+        let novoTexto = texto.replace(regexAcorde, (match) => {
+            let baseNota = match.match(/^[CDEFGAB][#b]?/)[0];
+            let sufixo = match.substring(baseNota.length);
+            
+            // Padronização simples de bemol para sustenido
+            if(baseNota === "Db") baseNota = "C#";
+            if(baseNota === "Eb") baseNota = "D#";
+            if(baseNota === "Gb") baseNota = "F#";
+            if(baseNota === "Ab") baseNota = "G#";
+            if(baseNota === "Bb") baseNota = "A#";
+
+            let idx = notas.indexOf(baseNota);
+            if(idx !== -1) {
+                let novoIdx = (idx + semitons) % 12;
+                if(novoIdx < 0) novoIdx += 12;
+                return notas[novoIdx] + sufixo;
+            }
+            return match;
+        });
+
+        corpo.innerText = novoTexto;
+    }
+
+    // Auto-Scroll para Palco
+    function toggle
+l>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dunamis</title>
+    <style>
+        :root {
+            --bg-principal: #121212;
+            --bg-card: #1e1e1e;
+            --bg-input: #2a2a2a;
+            --accent: #00adb5;
+            --text: #eeeeee;
+            --text-muted: #888888;
+            --tom-orig: #2e7d32;
+            --tom-masc: #1565c0;
+            --tom-fem: #c2185b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        /* Container Simulando APK Vertical */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            background-color: var(--bg-principal);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        /* Header Fixa */
+        header {
+            background-color: var(--bg-card);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2d2d2d;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .btn-add-musica {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        /* Área de Conteúdo Histórico (Scroll) */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 90px; /* Espaço para a barra inferior */
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Filtros Deslizantes Horizontais */
+        .scroll-filtros {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            scrollbar-width: none;
+        }
+        .scroll-filtros::-webkit-scrollbar {
+            display: none;
+        }
+
+        .btn-filtro {
+            background-color: var(--bg-card);
+            color: var(--text);
+            border: 1px solid #333;
+            padding: 8px 16px;
+            border-radius: 20px;
+            white-space: nowrap;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-filtro.active {
+            background-color: var(--accent);
+            color: #000;
+            font-weight: bold;
+            border-color: var(--accent);
+        }
+
+        /* Barra de Pesquisa */
+        .search-bar {
+            width: 100%;
+            background-color: var(--bg-input);
+            border: 1px solid #3d3d3d;
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--text);
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        /* Cards de Música */
+        .music-card {
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .music-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .music-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .tag-tema {
+            background: #333;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--accent);
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        /* Seletores de Tom Inteligentes */
+        .btn-tons-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .btn-tom {
+            border: 2px solid transparent;
+            padding: 6px;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-tom.orig { background-color: var(--tom-orig); }
+        .btn-tom.masc { background-color: var(--tom-masc); }
+        .btn-tom.fem { background-color: var(--tom-fem); }
+        
+        .btn-tom.selected {
+            border-color: #fff;
+            box-shadow: 0 0 8px #fff;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .btn-cifra { background-color: #444; color: white; }
+        .btn-add-setlist { background-color: var(--accent); color: black; }
+
+        /* Formulários das Abas */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: var(--bg-input);
+            border: 1px solid #3d3d3d;
+            padding: 10px;
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--accent);
+            color: black;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .btn-whatsapp {
+            width: 100%;
+            background-color: #25D366;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Lista de Itens Gerados */
+        .output-list {
+            margin-top: 15px;
+        }
+
+        .output-item {
+            background-color: var(--bg-card);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #333;
+        }
+
+        /* Escala Grid Visual */
+        .escala-item-linha {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #2d2d2d;
+            font-size: 0.9rem;
+        }
+        .escala-item-linha span:first-child {
+            color: var(--accent);
+        }
+
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background-color: var(--bg-card);
+            border-top: 1px solid #2d2d2d;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.75rem;
+            background: none;
+            border: none;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-item-icon {
+            font-size: 1.4rem;
+            margin-bottom: 2px;
+        }
+
+        /* Modais (Tela Cheia Nativa Mobile) */
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-principal);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .modal-body-cifra {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px;
+            border-radius: 6px;
+            white-space: pre;
+            overflow-x: auto;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .cifra-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-ctrl-cifra {
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <header>
+        <h1>MusicManager Pro</h1>
+        <button class="btn-add-musica" onclick="abrirModal('modalCadastro')">+ Nova Música</button>
+    </header>
+
+    <div class="main-content">
+        
+        <div id="tab-musicas" class="tab-content active">
+            <div class="scroll-filtros">
+                <button class="btn-filtro active" onclick="filtrarPorTema('Todos', this)">Todos</button>
+                <button class="btn-filtro" onclick="filtrarPorTema('Celebração', this)">Celebração</button>
+                <button class="btn-filtro" onclick="filtrarPorTema('Adoração', this)">Adoração</button>
+                <button class="btn-filtro" onclick="filtrarPorTema('Arrependimento', this)">Arrependimento</button>
+                <button class="btn-filtro" onclick="filtrarPorTema('Família', this)">Família</button>
+                <button class="btn-filtro" onclick="filtrarPorTema('Santa Ceia', this)">Santa Ceia</button>
+                <button class="btn-filtro" onclick="filtrarPorTema('Gratidão Medley', this)">Gratidão Medley</button>
+            </div>
+
+            <input type="text" id="inputPesquisa" class="search-bar" placeholder="Pesquisar música ou ministério..." oninput="filtrarMusicas()">
+
+            <div id="listaMusicas">
+                </div>
+        </div>
+
+        <div id="tab-repertorio" class="tab-content">
+            <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Montar Repertório</h2>
+            <div class="form-group">
+                <label>Nome do Evento / Data</label>
+                <input type="text" id="repEvento" class="form-control" placeholder="Ex: Culto de Domingo - 16 Out">
+            </div>
+            <div class="form-group">
+                <label>Músicas Selecionadas</label>
+                <textarea id="repListaMusicas" class="form-control" rows="4" placeholder="Escolha na aba de músicas ou digite aqui..."></textarea>
+            </div>
+            <button class="btn-submit" onclick="salvarRepertorio()">Salvar Repertório</button>
+            <button class="btn-whatsapp" onclick="compartilharRepertorio()">✉️ Enviar Setlist para WhatsApp</button>
+
+            <h3 style="font-size: 1rem; margin-top: 20px; margin-bottom: 10px;">Repertórios Ativos</h3>
+            <div id="listaRepertorios" class="output-list"></div>
+        </div>
+
+        <div id="tab-escala" class="tab-content">
+            <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Escala da Equipe</h2>
+            <div class="form-group">
+                <label>Data / Culto</label>
+                <input type="text" id="escData" class="form-control" placeholder="Ex: Domingo 16/10">
+            </div>
+            
+            <h3 style="font-size: 0.9rem; color: var(--accent); margin-bottom: 10px;">Vocais</h3>
+            <div class="form-group"><label>🎤 Microfone 1 (Líder)</label><input type="text" id="escM1" class="form-control"></div>
+            <div class="form-group"><label>🎤 Microfone 2</label><input type="text" id="escM2" class="form-control"></div>
+            <div class="form-group"><label>🎤 Microfone 3</label><input type="text" id="escM3" class="form-control"></div>
+            <div class="form-group"><label>🎤 Microfone 4</label><input type="text" id="escM4" class="form-control"></div>
+
+            <h3 style="font-size: 0.9rem; color: var(--accent); margin-bottom: 10px;">Banda / Instrumentistas</h3>
+            <div class="form-group"><label>🎸 Violão</label><input type="text" id="escVol" class="form-control"></div>
+            <div class="form-group"><label>🎸 Baixo</label><input type="text" id="escBax" class="form-control"></div>
+            <div class="form-group"><label>🎸 Guitarra</label><input type="text" id="escGui" class="form-control"></div>
+            <div class="form-group"><label>🎹 Teclado</label><input type="text" id="escTec" class="form-control"></div>
+            <div class="form-group"><label>🥁 Bateria</label><input type="text" id="escBat" class="form-control"></div>
+            <div class="form-group"><label>🎛️ Mesa de Som</label><input type="text" id="escSom" class="form-control"></div>
+
+            <button class="btn-submit" onclick="publicarEscala()">Publicar Escala</button>
+            <button class="btn-whatsapp" onclick="compartilharEscala()">✉️ Enviar Escala para WhatsApp</button>
+
+            <h3 style="font-size: 1rem; margin-top: 20px; margin-bottom: 10px;">Escalas Publicadas</h3>
+            <div id="listaEscalas" class="output-list"></div>
+        </div>
+
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="mudarAba('tab-musicas', this)">
+            <span class="nav-item-icon">🎵</span>
+            <span>Músicas</span>
+        </button>
+        <button class="nav-item" onclick="mudarAba('tab-repertorio', this)">
+            <span class="nav-item-icon">📋</span>
+            <span>Repertório</span>
+        </button>
+        <button class="nav-item" onclick="mudarAba('tab-escala', this)">
+            <span class="nav-item-icon">👥</span>
+            <span>Escala</span>
+        </button>
+    </nav>
+
+    <div id="modalCadastro" class="modal">
+        <div class="modal-header">
+            <h2>Nova Música</h2>
+            <button class="btn-ctrl-cifra" onclick="fecharModal('modalCadastro')">Fechar X</button>
+        </div>
+        <div class="form-group">
+            <label>Título da Música</label>
+            <input type="text" id="cadTitulo" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>Ministério / Artista</label>
+            <input type="text" id="cadMinisterio" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>Tema</label>
+            <select id="cadTema" class="form-control">
+                <option value="Adoração">Adoração</option>
+                <option value="Celebração">Celebração</option>
+                <option value="Arrependimento">Arrependimento</option>
+                <option value="Família">Família</option>
+                <option value="Santa Ceia">Santa Ceia</option>
+                <option value="Gratidão Medley">Gratidão Medley</option>
+            </select>
+        </div>
+        <div class="form-group" style="display:grid; grid-template-columns: repeat(3,1fr); gap:5px;">
+            <div><label>Tom Orig.</label><input type="text" id="cadTomOrig" class="form-control" placeholder="G"></div>
+            <div><label>Tom Masc.</label><input type="text" id="cadTomMasc" class="form-control" placeholder="E"></div>
+            <div><label>Tom Fem.</label><input type="text" id="cadTomFem" class="form-control" placeholder="C"></div>
+        </div>
+        <div class="form-group">
+            <label>Letra com Cifra</label>
+            <textarea id="cadCifra" class="form-control" rows="8" placeholder="Cole aqui a cifra monoespaçada..."></textarea>
+        </div>
+        <button class="btn-submit" onclick="salvarNovaMusica()">Salvar no Banco</button>
+    </div>
+
+    <div id="modalCifra" class="modal" style="background-color: #000;">
+        <div class="modal-header" style="border-color: #222;">
+            <h2 id="viewCifraTitulo" style="color: #fff; font-size: 1.1rem;">Cifra</h2>
+            <button class="btn-ctrl-cifra" onclick="fecharModalCifra()">Sair do Palco</button>
+        </div>
+        <div class="cifra-controls">
+            <button class="btn-ctrl-cifra" onclick="transporCifra(-1)">Tom -1</button>
+            <button class="btn-ctrl-cifra" onclick="transporCifra(1)">Tom +1</button>
+            <button class="btn-ctrl-cifra" id="btnAutoScroll" onclick="toggleAutoScroll()">Rolar Auto: OFF</button>
+        </div>
+        <div id="viewCifraCorpo" class="modal-body-cifra"></div>
+    </div>
+
+</div>
+
+<script>
+    // Banco de Dados Inicial (Carregado se o localStorage estiver vazio)
+    const musicasIniciais = [
+        {
+            id: 1,
+            titulo: "Gratidão Medley (Pot-Pourri)",
+            ministerio: "Arranjo Local",
+            tema: "Gratidão Medley",
+            tomOrig: "G", tomMasc: "G", tomFem: "C",
+            tomSelecionado: "G",
+            cifra: "G          D\nTe agradeço, oh Pai\nEm          C\nPelo que tens feito aqui"
+        },
+        {
+            id: 2,
+            titulo: "Lindo És",
+            ministerio: "Kingdom Culture",
+            tema: "Adoração",
+            tomOrig: "A", tomMasc: "G", tomFem: "D",
+            tomSelecionado: "A",
+            cifra: "A                   Bm\nLindo, lindo, lindo és\n          F#m          E\nGlória, glória eu Te dou"
+        }
+    ];
+
+    let bancoMusicas = JSON.parse(localStorage.getItem('bancoMusicas')) || musicasIniciais;
+    let bancoRepertorios = JSON.parse(localStorage.getItem('bancoRepertorios')) || [];
+    let bancoEscalas = JSON.parse(localStorage.getItem('bancoEscalas')) || [];
+
+    let filtroTemaAtual = "Todos";
+    let cifraOriginalTransposicao = "";
+    let scrollInterval = null;
+    letisScrolling = false;
+
+    // Inicialização
+    window.onload = function() {
+        renderizarMusicas();
+        renderizarRepertorios();
+        renderizarEscalas();
+    };
+
+    // Navegação entre Abas
+    function mudarAba(tabId, elemento) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        elemento.classList.add('active');
+    }
+
+    // Gerenciamento de Modais
+    function abrirModal(id) { document.getElementById(id).classList.add('active'); }
+    function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    // Renderizar Músicas no Banco
+    function renderizarMusicas() {
+        const container = document.getElementById('listaMusicas');
+        container.innerHTML = "";
+
+        const textoPesquisa = document.getElementById('inputPesquisa').value.toLowerCase();
+
+        const filtradas = bancoMusicas.filter(m => {
+            const corresp
